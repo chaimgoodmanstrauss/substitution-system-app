@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 595.28 841.89">
+  <!-- Generator: Adobe Illustrator 30.4.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 226)  -->
+  <defs>
+    <style>
+      .st0 {
+        stroke-miterlimit: 10;
+      }
+
+      .st0, .st1 {
+        fill: none;
+        stroke: #231f20;
+      }
+
+      .st1 {
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+  <rect class="st0" x="299.75" y="411.92" width="5.08" height="9" transform="translate(-205.44 332.77) rotate(-44.67)"/>
+  <polygon class="st1" points="299.25 418.53 296.53 415.78 291.6 418.02 287.27 429.67 287.62 430.03 292.5 425.21 293.63 424.4 294.29 424.26 294.21 424.99 293.39 426.12 288.52 430.93 288.87 431.28 300.57 427.09 302.86 422.19 300.14 419.44 299.25 418.53"/>
+</svg>

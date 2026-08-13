@@ -1,0 +1,694 @@
+:root {
+  --bg-chrome: #2b2b2b;
+  --bg-chrome-raised: #383838;
+  --bg-canvas: #1e1e1e;
+  --border: #1a1a1a;
+  --text: #d8d8d8;
+  --text-dim: #8c8c8c;
+  --accent: #2f7de1;
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text);
+  background: var(--bg-canvas);
+}
+
+button,
+input {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ---- shell ---- */
+
+.shell {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.shell__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ---- toolbar ---- */
+
+.toolbar {
+  width: 56px;
+  flex: none;
+  background: var(--bg-chrome);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.toolbar__section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar__section--bottom {
+  gap: 10px;
+  padding-bottom: 4px;
+}
+
+.tool-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tool-divider {
+  width: 32px;
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+.tool-button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.tool-button:hover {
+  background: var(--bg-chrome-raised);
+  border-color: var(--border);
+}
+
+.tool-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--text-dim);
+}
+
+.tool-field input {
+  width: 40px;
+  background: var(--bg-chrome-raised);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 4px;
+  text-align: center;
+}
+
+.toggle-button {
+  width: 48px;
+  padding: 4px 2px;
+  font-size: 9px;
+  line-height: 1.2;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg-chrome-raised);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.toggle-button--on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ---- active tool button ---- */
+
+.tool-button--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ---- fill/stroke section in toolbar ---- */
+
+.fill-stroke-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+/* Overlapping swatch pair (Illustrator style): stroke behind, fill on top */
+.swatch-wrap {
+  position: relative;
+  width: 36px;
+  height: 30px;
+}
+
+.swatch {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 2px;
+  border: 1.5px solid #888;
+  cursor: pointer;
+  padding: 0;
+}
+
+.swatch--stroke {
+  bottom: 0;
+  right: 0;
+}
+
+.swatch--fill {
+  top: 0;
+  left: 0;
+}
+
+/* Diagonal slash for "none" */
+.swatch--none {
+  background: white !important;
+  background-image: linear-gradient(
+    to bottom right,
+    white calc(50% - 1px),
+    red 50%,
+    white calc(50% + 1px)
+  ) !important;
+  opacity: 1 !important;
+}
+
+.tool-field--inline {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-dim);
+  font-size: 10px;
+}
+
+.tool-field--inline input {
+  width: 36px;
+  background: var(--bg-chrome-raised);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 3px;
+  text-align: center;
+  font-size: 10px;
+}
+
+/* ---- color picker popup ---- */
+
+.color-picker-popup {
+  position: fixed;
+  z-index: 1000;
+  background: #2e2e2e;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 160px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.color-picker-popup[hidden] {
+  display: none;
+}
+
+.cp-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text);
+}
+
+.cp-row--swatches {
+  align-items: center;
+  gap: 6px;
+}
+
+/* shared sizing for no-color swatch and color input swatch */
+.cp-swatch {
+  width: 28px;
+  height: 28px;
+  border: 2px solid #555;
+  border-radius: 3px;
+  cursor: pointer;
+  flex: none;
+  box-sizing: border-box;
+}
+
+.cp-swatch--active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* no-color swatch: white box + red diagonal SVG */
+.cp-swatch--none {
+  background: white;
+  padding: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+.cp-swatch--none svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* color input swatch */
+.cp-color-input {
+  padding: 0;
+  background: transparent;
+}
+
+.cp-hex {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: monospace;
+}
+
+.cp-alpha-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  flex: none;
+}
+
+.cp-alpha {
+  flex: 1;
+  accent-color: var(--accent);
+}
+
+.cp-alpha-val {
+  font-size: 10px;
+  color: var(--text-dim);
+  width: 28px;
+  text-align: right;
+  flex: none;
+}
+
+/* ---- panel strip ---- */
+
+.panel-strip {
+  flex: none;
+  height: 220px;    /* fixed — main canvas size is independent of panel content */
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: #f0f0f0;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+}
+
+/* ---- motif panel ---- */
+
+.motif-panel {
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1.5px solid #ccc;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+}
+
+.motif-panel--selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.motif-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: #e8e8e8;
+  border-bottom: 1px solid #ccc;
+}
+
+.motif-panel__name {
+  font-size: 11px;
+  color: #555;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.motif-panel__delete {
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0;
+  flex: none;
+}
+
+.motif-panel__delete:hover { color: #333; }
+
+/* ---- panel drawing SVG ---- */
+
+.panel-svg {
+  width: 190px;
+  height: 160px;
+  display: block;
+  background: #fff;
+  cursor: crosshair;
+}
+
+.panel-svg[data-tool="select"],
+.panel-svg[data-tool="direct"],
+.panel-svg[data-tool="rotate"],
+.panel-svg[data-tool="scale"] { cursor: default; }
+
+.panel-ruler {
+  stroke: #bbb;
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ---- tool preview (drawing in progress) ---- */
+
+/* Outline mode: solid black stroke, no fill */
+.tool-preview--outline {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+/* Preview mode: actual style applied inline — just suppress pointer events */
+.tool-preview--live {
+  pointer-events: none;
+}
+
+/* ---- anchor points (select / direct-select tools) ---- */
+
+.anchor-pt {
+  fill: #fff;
+  stroke: var(--accent);
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+  cursor: default;
+}
+
+.anchor-pt--sel {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+/* ---- bezier handles (direct-select, selected vertex) ---- */
+
+.bezier-arm {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 3 2;
+  pointer-events: none;
+}
+
+.bezier-handle {
+  fill: #fff;
+  stroke: var(--accent);
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+  cursor: crosshair;
+}
+
+/* ---- transform center indicator (rotate / scale tools) ---- */
+
+.center-line {
+  stroke: var(--accent);
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.center-dot {
+  fill: var(--accent);
+  pointer-events: none;
+}
+
+.scale-center-dot {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Reflect tool axis line */
+.reflect-axis {
+  stroke: var(--accent);
+  stroke-width: 1px;
+  stroke-dasharray: 5 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+/* ---- transform dialog (opt+click on rotate / scale) ---- */
+
+.transform-dialog {
+  position: fixed;
+  z-index: 2000;
+  background: #555;
+  border-radius: 5px;
+  padding: 7px 9px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: #e8e8e8;
+  font-family: var(--font-ui);
+}
+
+.td-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.td-input {
+  width: 58px;
+  background: #3a3a3a;
+  border: 1px solid #777;
+  border-radius: 3px;
+  color: #e8e8e8;
+  padding: 2px 5px;
+  font-size: 11px;
+  font-family: var(--font-ui);
+  text-align: right;
+}
+
+.td-unit {
+  color: #bbb;
+  font-size: 11px;
+  flex: none;
+}
+
+.td-buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.td-buttons button {
+  background: #666;
+  border: 1px solid #888;
+  border-radius: 3px;
+  color: #e8e8e8;
+  font-size: 10px;
+  padding: 2px 7px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+}
+
+.td-buttons button:hover { background: #777; }
+
+.td-buttons button:last-child {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ---- drag-duplicate ghost ---- */
+
+.drag-ghost {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* ---- layer list ---- */
+
+.panel-layer-list-wrap {
+  border-top: 1px solid #e0e0e0;
+}
+
+.panel-layer-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-layer-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  cursor: pointer;
+  font-size: 10px;
+  color: #555;
+}
+
+.panel-layer-row:hover {
+  background: #f5f5f5;
+}
+
+.panel-layer-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+  border: 1px solid #ccc;
+}
+
+/* ---- add motif button ---- */
+
+.add-motif-btn {
+  width: 36px;
+  height: 36px;
+  border: 1.5px dashed #bbb;
+  border-radius: 4px;
+  background: transparent;
+  color: #999;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  flex: none;
+}
+
+.add-motif-btn:hover {
+  border-color: #888;
+  color: #555;
+}
+
+/* ---- main canvas ---- */
+
+.canvas-field {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+}
+
+.canvas-field__surface {
+  width: 100%;
+  height: 100%;
+}
+
+/* Ruler elements hidden unless SVG carries .show-rulers */
+.canvas-field__surface:not(.show-rulers) .ruler {
+  display: none;
+}
+
+/* Outline mode — main canvas */
+.canvas-field__surface.outline-mode .motif-path {
+  fill: none !important;
+  stroke: #000 !important;
+  stroke-width: 1px !important;
+  stroke-opacity: 1 !important;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Outline mode — panel SVGs */
+.panel-svg.outline-mode path[data-layer-index] {
+  fill: none !important;
+  stroke: #000 !important;
+  stroke-width: 1px !important;
+  stroke-opacity: 1 !important;
+  vector-effect: non-scaling-stroke;
+}
+
+.canvas-view-toggle {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  padding: 4px 8px;
+  font-size: 11px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.85);
+  color: #666;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+
+.canvas-view-toggle:hover {
+  background: rgba(255,255,255,0.95);
+  color: #333;
+}
+
+.canvas-view-toggle--active {
+  background: rgba(255,255,255,0.95);
+  color: #333;
+  border-color: #888;
+}
+
+/* ---- mobile gate ---- */
+
+.mobile-gate {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-canvas);
+  color: var(--text);
+  font-size: 14px;
+  text-align: center;
+  padding: 24px;
+}
+
+.mobile-gate[hidden] {
+  display: none;
+}
