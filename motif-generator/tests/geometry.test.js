@@ -11,6 +11,7 @@ import {
   computeReptileLevels,
   buildAdjacency,
   computeCombinatorialLevels,
+  extractMotifRuler,
   STANDARD_SEGMENT,
 } from '../src/geometry.js';
 import { createDefaultProject } from '../src/model.js';
@@ -157,7 +158,7 @@ test("reptiling: every level's own ruler is the standard segment (scale normaliz
 // descriptions of the same result.
 
 test('combinatorial adjacency: default square rule connects bottom row and top row separately', () => {
-  const motifRulers = { square: project.motifs.square.ruler };
+  const motifRulers = { square: extractMotifRuler(project.motifs.square) };
   const edges = buildAdjacency(project.rules.square, motifRulers, 1e-6);
   // placement order: 0=bottom-left, 1=bottom-right, 2=top-left, 3=top-right
   const edgeTargets = (i) => edges[i].map((e) => e.to).sort();

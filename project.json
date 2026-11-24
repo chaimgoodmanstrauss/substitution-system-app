@@ -1,0 +1,9 @@
+{
+  "name": "Motif Generator",
+  "cat": "Geometry",
+  "icon": "nest",
+  "desc": "Recursive SVG motif / substitution-system generator.",
+  "path": "substitution-system-app/",
+  "live": false,
+  "img": "icons/nest.jpg"
+}

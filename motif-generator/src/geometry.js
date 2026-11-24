@@ -189,19 +189,22 @@ export function computeNormalizedPlacementTransforms(rule, motifRulers) {
   });
 }
 
+// Extracts a motif's ruler from its ruler layer (layers[0] since the
+// ruler-as-layer refactor), falling back to a legacy top-level motif.ruler
+// field for pre-refactor state.
+export function extractMotifRuler(motif) {
+  const rl = motif.layers?.find((l) => l.type === 'ruler');
+  if (rl) return { p0: rl.points[0] ?? [0, 0], p1: rl.points[1] ?? [1, 0] };
+  return motif.ruler ?? { p0: [0, 0], p1: [1, 0] };
+}
+
 // Computes normalized symbols for every motif, for levels 1..maxLevel, in one
 // global pass per level (so cross-motif rule references resolve correctly —
 // spec §0.8/§2a). motifs: { [id]: { ruler, points } } — level-0 geometry.
 // rules: { [id]: Rule } — one rule per motif.
 export function computeReptileLevels(motifs, rules, maxLevel) {
   const motifIds = Object.keys(motifs);
-  // Extract ruler from ruler layer (or fall back to motif.ruler for old state)
-  function extractRuler(motif) {
-    const rl = motif.layers?.find((l) => l.type === 'ruler');
-    if (rl) return { p0: rl.points[0] ?? [0, 0], p1: rl.points[1] ?? [1, 0] };
-    return motif.ruler ?? { p0: [0, 0], p1: [1, 0] };
-  }
-  const motifRulers = Object.fromEntries(motifIds.map((id) => [id, extractRuler(motifs[id])]));
+  const motifRulers = Object.fromEntries(motifIds.map((id) => [id, extractMotifRuler(motifs[id])]));
   const normalizedMotifs = Object.fromEntries(
     motifIds.map((id) => [id, normalizeSymbol({ ...motifs[id], ruler: motifRulers[id] })])
   );
@@ -351,13 +354,18 @@ export function combinatorialLevel(rule, childSymbols, adjacency, seedIndex = 0)
 // one global pass per level (mirrors computeReptileLevels — spec §0.8/§2a).
 export function computeCombinatorialLevels(motifs, rules, maxLevel, tolerance = 1e-6) {
   const motifIds = Object.keys(motifs);
-  const motifRulers = Object.fromEntries(motifIds.map((id) => [id, motifs[id].ruler]));
+  const motifRulers = Object.fromEntries(motifIds.map((id) => [id, extractMotifRuler(motifs[id])]));
   const adjacencyByMotif = Object.fromEntries(
     motifIds.map((id) => [id, buildAdjacency(rules[id], motifRulers, tolerance)])
   );
 
   const levels = [null];
-  let previousSymbols = motifs; // level 0
+  // level 0: raw motifs, normalized to carry a top-level .ruler (mirrors
+  // computeReptileLevels' normalizedMotifs) so combinatorialLevel can read
+  // childSymbols[refId].ruler uniformly at every level, including level 1.
+  let previousSymbols = Object.fromEntries(
+    motifIds.map((id) => [id, { ...motifs[id], ruler: motifRulers[id] }])
+  );
 
   for (let level = 1; level <= maxLevel; level += 1) {
     const current = {};
